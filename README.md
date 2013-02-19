@@ -1,4 +1,4 @@
 etc
 ===
 
-random stuff
+random stuff, mostly in ruby
