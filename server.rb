@@ -6,34 +6,33 @@ port = 65432
 
 server = TCPServer.new("", port)
 
-puts "server initiated...\n\r"
 puts "listening on port #{port}...\n\r"
 
 loop do
-  puts "waiting for client connection...\n\r"
+  Thread.start(server.accept) do |client|    
 
-  client = server.accept
-  
-  puts "client connected!\n\r"  
-  puts "sending message...\n\r" 
+    puts "client connected!\n\r"
 
-  responseBody = "<html>\r\n"
-  responseBody << "<body>\r\n"
-  responseBody << "<h1>hello world</h1>\r\n"
-  responseBody << "</body>\r\n"
-  responseBody << "</html>\r\n"
-  responseBody << "\r\n"
-  responseBody << "\r\n"
+    request = ""
+    while line = client.gets
+      request << line
+      break if line =~ /^\s*$/
+    end
 
-  responseHeader = "HTTP/1.1 200 OK\r\n"
-  responseHeader << "Content-Type: text/html; charset=utf-8\r\n"
-  responseHeader << "Content-Length: #{responseBody.length.to_s}\r\n"
-  responseHeader << "\r\n"
+    file = request.split("\n").first.split[1]
 
-  client.puts responseHeader+responseBody
+    file = "index.html" if file == "/"
 
-  client.close
+    file = file.sub("/","")
 
-  puts "done!"
-  puts "--------------------------------------------------"
+    if !File.exists? file
+      response = "<html><body><h1>404 NOT FOUND</h1></body></html>"
+    else
+      response = File.read(file)
+    end
+
+    client.puts response
+
+    client.close
+  end
 end
