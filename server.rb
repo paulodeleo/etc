@@ -8,8 +8,10 @@ server = TCPServer.new("", port)
 
 puts "listening on port #{port}...\n\r"
 
-loop do
-  Thread.start(server.accept) do |client|    
+#loop do
+#  Thread.start(server.accept) do |client|  
+
+    client = server.accept  
 
     puts "client connected!\n\r"
 
@@ -26,13 +28,23 @@ loop do
     file = file.sub("/","")
 
     if !File.exists? file
-      response = "<html><body><h1>404 NOT FOUND</h1></body></html>"
+      responseBody = "<html><body><h1>404 NOT FOUND</h1></body></html>"
     else
-      response = File.read(file)
+      responseHeader = "HTTP/1.1 200 OK\n\r"
+
+      t = Time.new.utc
+      responseHeader << "Date: #{t.strftime("%A, %d %B %Y %H:%M:%S GMT")}\n\r"
+
+      responseHeader << "Server: Navajo/0.0.1 (Win32)\n\r"
+
+      responseBody = File.read(file)
     end
 
-    client.puts response
-
+    client.puts responseHeader
+    client.puts responseBody
+    client.puts "\n\r"
+    client.puts "\n\r"
+   
     client.close
-  end
-end
+#  end
+#end
